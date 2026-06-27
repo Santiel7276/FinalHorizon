@@ -5,29 +5,45 @@ from code.config import WIN_WIDTH, WIN_HEIGHT
 
 class Player:
     def __init__(self):
-        self.image = pygame.image.load('./assets/imagens/nave.png').convert_alpha()
+        # Carregando e redimensionando as 3 imagens de estado da nave
+        self.image_full = pygame.transform.scale(pygame.image.load('./assets/imagens/nave_full.png').convert_alpha(),
+                                                 (100, 100))
+        self.image_dmg1 = pygame.transform.scale(pygame.image.load('./assets/imagens/nave_dmg1.png').convert_alpha(),
+                                                 (100, 100))
+        self.image_dmg2 = pygame.transform.scale(pygame.image.load('./assets/imagens/nave_dmg2.png').convert_alpha(),
+                                                 (100, 100))
 
-        # Redimensionando a nave
-        self.image = pygame.transform.scale(self.image, (100, 100))
+        # Atributos iniciais do jogador
+        self.health = 3
+        self.image = self.image_full
 
-        #
+        # Posição e velocidade da nave
         self.rect = self.image.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT - 60))
-
-        # Velocidade de movimento
         self.speed = 7
 
     def move(self):
-        # Captura as teclas pressionadas
         keys = pygame.key.get_pressed()
 
-        # Move para a esquerda, mas não deixa sair do limite da tela
+        # Movimentação Horizontal
         if keys[pygame.K_LEFT] and self.rect.left > 0:
             self.rect.x -= self.speed
-
-        # Move para a direita, mas não deixa passar da largura da tela
         if keys[pygame.K_RIGHT] and self.rect.right < WIN_WIDTH:
             self.rect.x += self.speed
 
+        # Movimentação vertical
+        if keys[pygame.K_UP] and self.rect.top > (WIN_HEIGHT // 2):
+            self.rect.y -= self.speed
+        if keys[pygame.K_DOWN] and self.rect.bottom < WIN_HEIGHT:
+            self.rect.y += self.speed
+
+    def take_damage(self):
+        """Reduz a vida da nave e troca a imagem automaticamente."""
+        self.health -= 1
+
+        if self.health == 2:
+            self.image = self.image_dmg1
+        elif self.health == 1:
+            self.image = self.image_dmg2
+
     def draw(self, surface):
-        # Desenha a nave na tela na posição atual
         surface.blit(self.image, self.rect)
