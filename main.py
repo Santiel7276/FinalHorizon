@@ -8,10 +8,8 @@ from code.bullet import Bullet
 from code.explosion import Explosion
 from code.background import Background
 
-
 def reset_game():
     return Player(), [Obstacle() for _ in range(4)], [], []
-
 
 def main():
     pygame.init()
@@ -19,8 +17,6 @@ def main():
     pygame.display.set_caption(GAME_TITLE)
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("arial", 28, bold=True)
-
-    # Carrega a imagem do coração e redimensiona para o HUD
     heart_img = pygame.transform.scale(pygame.image.load('./assets/imagens/heart.png').convert_alpha(), (30, 30))
 
     Menu(window).run()
@@ -28,49 +24,39 @@ def main():
     player, obstacles, bullets, explosions = reset_game()
     bg = Background()
     score = 0
-    score_timer = 0  # Timer para pontuação por sobrevivência
-
+    score_timer = 0
     running = True
     game_state = "PLAYING"
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: running = False
-
             if game_state == "GAME_OVER" and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     player, obstacles, bullets, explosions = reset_game()
                     score = 0
                     game_state = "PLAYING"
-
             if game_state == "PLAYING" and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 bullets.append(Bullet(player.rect.centerx, player.rect.top))
 
         if game_state == "PLAYING":
             player.move()
             bg.move()
-
-            # Aumento de score e dificuldade
             score_timer += 1
-            if score_timer >= 30:  # Ganha 1 ponto a cada 0.5s
+            if score_timer >= 30:
                 score += 1
                 score_timer = 0
-
             difficulty_modifier = score // 100
-
             for b in bullets[:]:
                 b.move()
                 if b.rect.bottom < 0: bullets.remove(b)
-
             for obs in obstacles[:]:
                 obs.move()
                 obs.rect.y += difficulty_modifier
-
                 if player.rect.colliderect(obs.rect):
                     player.take_damage()
                     obs.rect.y = -100
                     if player.health <= 0: game_state = "GAME_OVER"
-
                 for b in bullets[:]:
                     if obs.is_destructible and b.rect.colliderect(obs.rect):
                         explosions.append(Explosion(obs.rect.centerx, obs.rect.centery))
@@ -84,16 +70,11 @@ def main():
             for obs in obstacles: obs.draw(window)
             for b in bullets: b.draw(window)
             for ex in explosions[:]:
-                if not ex.update():
-                    explosions.remove(ex)
-                else:
-                    ex.draw(window)
+                if not ex.update(): explosions.remove(ex)
+                else: ex.draw(window)
 
-            # HUD (SCORE + CORAÇÕES)
             score_text = font.render(f"SCORE: {score}", True, COLOR_WHITE)
             window.blit(score_text, (20, WIN_HEIGHT - 40))
-
-            # Desenha um coração para cada vida restante
             for i in range(player.health):
                 window.blit(heart_img, (WIN_WIDTH - 40 - (i * 35), WIN_HEIGHT - 40))
 
@@ -107,7 +88,6 @@ def main():
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()
