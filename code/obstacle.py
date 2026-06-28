@@ -6,7 +6,7 @@ from code.config import WIN_WIDTH, WIN_HEIGHT
 class Obstacle:
     def __init__(self):
         # 1. Tamanho da imagem
-        self.size = random.randint(100, 160)
+        self.size = random.randint(130, 200)
         self.image_original = pygame.transform.scale(pygame.image.load('./assets/imagens/ast.png').convert_alpha(),
                                                      (self.size, self.size))
         self.image = self.image_original

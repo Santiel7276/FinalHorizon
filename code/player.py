@@ -12,7 +12,7 @@ class Player:
         self.image_dmg2 = pygame.transform.scale(pygame.image.load('./assets/imagens/nave_dmg2.png').convert_alpha(),
                                                  (100, 100))
 
-        # Definindo o tamanho do fogo e carregando os frames
+        # Definindo o tamanho da chama de acordo com a velocidade da nave
         fire_size = (30, 40)
         self.fire_frames = [
             pygame.transform.scale(pygame.image.load('./assets/imagens/fire.png').convert_alpha(), fire_size),
@@ -50,8 +50,7 @@ class Player:
             self.fire_index = (self.fire_index + 0.3) % 4
             fire_img = self.fire_frames[int(self.fire_index)]
 
-            # Ajuste fino para alinhar os fogos conforme image_df61ff.png
-            # Centralizando o fogo sob a nave
+            # Centralizando a animação do fogo com a nave
             surface.blit(fire_img, (img_rect.centerx - 30, img_rect.centery + 10))
             surface.blit(fire_img, (img_rect.centerx - 2, img_rect.centery + 11))
 
