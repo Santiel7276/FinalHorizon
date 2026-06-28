@@ -40,14 +40,12 @@ def main():
                     score = 0
                     game_state = "PLAYING"
 
-
         if game_state == "PLAYING":
             player.move()
 
             novo_tiro = player.shoot()
             if novo_tiro:
                 bullets.append(novo_tiro)
-            # -------------------------------------
 
             bg.move()
             score_timer += 1
@@ -63,16 +61,21 @@ def main():
             for obs in obstacles[:]:
                 obs.move()
                 obs.rect.y += difficulty_modifier
+
+                # --- CORREÇÃO DA COLISÃO (DANO) ---
                 if player.rect.colliderect(obs.rect):
                     player.take_damage()
-                    obs.rect.y = -100
-                    if player.health <= 0: game_state = "GAME_OVER"
+                    obs.respawn()  # Troquei o y = -100 pelo novo respawn
+                    if player.health <= 0:
+                        game_state = "GAME_OVER"
+
+                # --- CORREÇÃO DA COLISÃO (TIRO) ---
                 for b in bullets[:]:
                     if obs.is_destructible and b.rect.colliderect(obs.rect):
                         explosions.append(Explosion(obs.rect.centerx, obs.rect.centery))
                         score += 10
                         bullets.remove(b)
-                        obs.rect.y = -100
+                        obs.respawn()  # Troquei o y = -100 pelo novo respawn
 
             window.fill(COLOR_BLACK)
             bg.draw(window)
