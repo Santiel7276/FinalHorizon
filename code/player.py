@@ -25,7 +25,6 @@ class Player:
         self.speed = 7
         self.fire_index = 0.0
 
-        # HITBOX AJUSTADA: Reduzida de 60x60 para 35x45 para colar no centro visual da nave
         self.rect = pygame.Rect(0, 0, 35, 45)
         self.rect.center = (WIN_WIDTH // 2, WIN_HEIGHT - 60)
 
@@ -34,11 +33,15 @@ class Player:
 
     def move(self):
         keys = pygame.key.get_pressed()
+
+        # Movimento horizontal
         if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.rect.left > 0:
             self.rect.x -= self.speed
         if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.rect.right < WIN_WIDTH:
             self.rect.x += self.speed
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.rect.top > (WIN_HEIGHT // 2):
+
+        # Movimento vertical - Limite alterado para 0 (topo da tela)
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.rect.top > 0:
             self.rect.y -= self.speed
         if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.rect.bottom < WIN_HEIGHT:
             self.rect.y += self.speed
@@ -71,6 +74,3 @@ class Player:
             surface.blit(fire_img, (img_rect.centerx - 2, img_rect.centery + 11))
 
         surface.blit(self.image, img_rect)
-
-        # TRUQUE DE DESENVOLVEDOR: Tire o '#' da linha abaixo para enxergar as hitboxes vermelhas na tela
-        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
