@@ -10,28 +10,24 @@ class Menu:
         self.window = window
         self.bg = Background()
 
-        # Garante o caminho correto para os assets, independente de onde o script principal foi chamado
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        font_path = os.path.join(base_dir, 'assets', 'fontes', 'PressStart2P-Regular.ttf')
-
-        # Carrega a fonte principal do jogo ou usa uma padrão do sistema
+        # Carrega a fonte principal do jogo usando caminho relativo simples
         try:
-            self.font_title = pygame.font.Font(font_path, 52)
+            self.font_title = pygame.font.Font('./assets/fontes/PressStart2P-Regular.ttf', 52)
         except FileNotFoundError:
-            print(f"ERRO: Não achou a fonte em {font_path}")
+            print("ERRO: Não achou a fonte principal.")
             self.font_title = pygame.font.SysFont("courier", 52, bold=True)
 
         try:
-            self.font_inst = pygame.font.Font(font_path, 24)
+            self.font_inst = pygame.font.Font('./assets/fontes/PressStart2P-Regular.ttf', 24)
         except FileNotFoundError:
             self.font_inst = pygame.font.SysFont("courier", 24)
 
         try:
-            self.font_small = pygame.font.Font(font_path, 14)
+            self.font_small = pygame.font.Font('./assets/fontes/PressStart2P-Regular.ttf', 14)
         except FileNotFoundError:
             self.font_small = pygame.font.SysFont("courier", 14)
 
-        # Controla as telas do menu e qual opção está selecionada
+        # Controla as telas do menu ("MAIN" ou "CONTROLS") e qual opção está selecionada
         self.state = "MAIN"
         self.selected_index = 0
 
@@ -41,7 +37,7 @@ class Menu:
 
         # Game loop exclusivo da tela de menu
         while running:
-            self.bg.move() # Mantém o fundo se movendo
+            self.bg.move() # Mantém o fundo se movendo mesmo com o jogo pausado
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -67,7 +63,7 @@ class Menu:
                         if event.key == pygame.K_ESCAPE:
                             self.state = "MAIN"
 
-            # Renderização de acordo com o estado da tela
+            # Renderização de acordo com o estado atual da tela
             self.window.fill(COLOR_BLACK)
             self.bg.draw(self.window)
 
@@ -80,7 +76,7 @@ class Menu:
             clock.tick(60)
 
     def draw_main_menu(self):
-        # Efeito no título
+        # Cria um efeito simples de sombra deslocando o texto escuro um pouco para o lado
         title_shadow = self.font_title.render(GAME_TITLE, True, (40, 40, 40))
         title = self.font_title.render(GAME_TITLE, True, COLOR_WHITE)
 
@@ -89,7 +85,7 @@ class Menu:
         self.window.blit(title_shadow, (title_rect.x + 4, title_rect.y + 4))
         self.window.blit(title, title_rect)
 
-        # Destaca em amarelo a opção que o player estiver
+        # Destaca em amarelo o texto onde o cursor (selected_index) está apontando
         color_start = (255, 255, 0) if self.selected_index == 0 else COLOR_WHITE
         color_controls = (255, 255, 0) if self.selected_index == 1 else COLOR_WHITE
 
@@ -103,28 +99,42 @@ class Menu:
         title = self.font_title.render("COMO JOGAR", True, COLOR_WHITE)
         self.window.blit(title, title.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 6)))
 
-        # objetivo e dicas
+        # --- SEÇÃO 1: OBJETIVO E DICAS ---
         obj1 = self.font_small.render("OBJETIVO: Alcance 12.000 Pontos para VENCER!", True, (50, 255, 255))
         self.window.blit(obj1, obj1.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 80)))
 
+        # Renderizando a linha da DICA em 3 partes separadas para aplicar cores diferentes
         dica_parte1 = self.font_small.render("DICA: ", True, (255, 255, 0))
         dica_parte2 = self.font_small.render("Apenas os meteoros que ", True, COLOR_WHITE)
         dica_parte3 = self.font_small.render("PISCAM", True, (255, 255, 0))
 
+        # Junta e centraliza os tamanhos de cada bloco para a frase ficar perfeita em qualquer resolução
         largura_total = dica_parte1.get_width() + dica_parte2.get_width() + dica_parte3.get_width()
         pos_x_inicial = (WIN_WIDTH // 2) - (largura_total // 2)
         pos_y_linha2 = (WIN_HEIGHT // 2) - 40 - (dica_parte1.get_height() // 2)
 
+        # Desenhando as 3 partes uma colada na outra sequencialmente
         self.window.blit(dica_parte1, (pos_x_inicial, pos_y_linha2))
         self.window.blit(dica_parte2, (pos_x_inicial + dica_parte1.get_width(), pos_y_linha2))
         self.window.blit(dica_parte3, (pos_x_inicial + dica_parte1.get_width() + dica_parte2.get_width(), pos_y_linha2))
+
+        # Terceira linha (Complemento da Dica)
         obj3 = self.font_small.render("podem ser destruidos com seus tiros.", True, COLOR_WHITE)
         self.window.blit(obj3, obj3.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 10)))
+
+        # Quarta linha (Aviso da Vida extra!)
         obj4 = self.font_small.render("Destruir um deles te da 1 VIDA!", True, (50, 255, 50))
         self.window.blit(obj4, obj4.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 + 20)))
+
+        # --- SEÇÃO 2: COMANDOS ---
         inst1 = self.font_small.render("WASD ou Setas - Mover a Nave", True, COLOR_WHITE)
         inst2 = self.font_small.render("Segurar Espaco - Atirar", True, COLOR_WHITE)
+
+        # Tom cinza discreto no rodapé para indicar uma ação de saída secundária
         inst3 = self.font_small.render("ESC - Voltar ao Menu", True, COLOR_GRAY)
+
+        # Desenha os blocos de comando com um espaçamento vertical confortável
         self.window.blit(inst1, inst1.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 + 80)))
         self.window.blit(inst2, inst2.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 + 120)))
+
         self.window.blit(inst3, inst3.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT - 60)))

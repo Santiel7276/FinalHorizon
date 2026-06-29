@@ -10,13 +10,10 @@ class Background:
         self.stars = [[random.randint(0, WIN_WIDTH), random.randint(0, WIN_HEIGHT), random.uniform(0.5, 2.0)] for _ in
                       range(100)]
 
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        planet_dir = os.path.join(base_dir, 'assets', 'imagens', 'Planets')
-
-        # Carrega os 5 tipos de planetas da pasta de imagens
+        # Carrega os 5 tipos de planetas da pasta de imagens usando caminho relativo
         self.planet_images = []
         for i in range(1, 6):
-            img_path = os.path.join(planet_dir, f'planet{i}.png')
+            img_path = f'./assets/imagens/Planets/planet{i}.png'
             try:
                 img = pygame.image.load(img_path).convert_alpha()
                 self.planet_images.append(img)
@@ -40,12 +37,12 @@ class Background:
         if len(self.active_planets) >= 2:
             can_spawn = False
         else:
-            # Não deixa nascer planeta novo se o anterior ainda estiver na parte de cima da tela
+            # Não deixa nascer planeta novo se o anterior ainda estiver na metade de cima da tela
             for planet in self.active_planets:
                 if planet[1] < WIN_HEIGHT // 2:
                     can_spawn = False
 
-        # Se a tela estiver limpa, cria novos planetas
+        # Se a tela estiver liberada, tenta criar um novo planeta no topo
         if can_spawn:
             self.spawn_timer += 1
             if self.spawn_timer > 60 and random.random() < 0.02:
@@ -66,6 +63,7 @@ class Background:
                 self.active_planets.remove(planet)
 
     def draw(self, surface):
+        # Desenha primeiro os planetas no fundo
         for planet in self.active_planets:
             surface.blit(planet[2], (planet[0], planet[1]))
 
