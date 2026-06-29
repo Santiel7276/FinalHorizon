@@ -20,12 +20,12 @@ def main():
     pygame.init()
     pygame.mixer.init()
 
-    # Aumentando o número de canais de audio
+    # Aumentando o númerode canais de audio
     pygame.mixer.set_num_channels(16)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Som da explosão
+    # Som de explosao
     explosao_path = os.path.join(base_dir, 'assets', 'sons', 'som_explosao_meteoro.mp3')
     try:
         snd_explosion = pygame.mixer.Sound(explosao_path)
@@ -34,7 +34,7 @@ def main():
         print(f"ERRO: Não carregou som da explosão. {e}")
         snd_explosion = None
 
-    # Som do impacto
+    # Som de impacto
     impacto_path = os.path.join(base_dir, 'assets', 'sons', 'som_nave_batendo.mp3')
     try:
         snd_impact = pygame.mixer.Sound(impacto_path)
@@ -43,7 +43,7 @@ def main():
         print(f"ERRO: Não carregou som de impacto. {e}")
         snd_impact = None
 
-    # Efeito sonoro de quando o player ganhar 1 vida
+    # Efito sonoro de quando o player conseguir 1 vida
     vida_path = os.path.join(base_dir, 'assets', 'sons', 'som_vida_ganha.mp3')
     try:
         snd_heal = pygame.mixer.Sound(vida_path)
@@ -52,7 +52,7 @@ def main():
         print(f"ERRO: Não carregou som de vida ganha. {e}")
         snd_heal = None
 
-    # Música de fundo
+    # Musica de fundo
     musica_path = os.path.join(base_dir, 'assets', 'sons', 'musica_fundo.ogg')
     try:
         pygame.mixer.music.load(musica_path)
@@ -61,7 +61,7 @@ def main():
     except Exception as e:
         print(f"ERRO NA MÚSICA: {e}")
 
-    # Efeito para a tela tremer
+    # Efeito screen shake
     window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     render_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT))
     pygame.display.set_caption(GAME_TITLE)
@@ -97,12 +97,12 @@ def main():
     game_state = "PLAYING"
 
     while running:
-        # EVENTOS
+        # Eventos
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            # Mecânica para resetar e voltar a jogar apertando R quando der game over
-            if game_state == "GAME_OVER" and event.type == pygame.KEYDOWN:
+            # Mecânica para resetar e voltar a jogar
+            if (game_state == "GAME_OVER" or game_state == "VICTORY") and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     if player:
                         player.stop_sounds()
@@ -120,17 +120,22 @@ def main():
 
             bg.move()
 
-            # Pontuação
+            # Pontuação do player
             score_timer += 1
             if score_timer >= 30:
                 score += 15
                 score_timer = 0
 
-            # Dificuldade do jogo (aumenta a cada 3000  pontos)
+            # Sobe de nível a cada 3000 pontos alcançados
             new_level = score // 3000
             if new_level > current_level:
                 current_level = new_level
-                level_up_timer = 120
+                level_up_timer = 120  # Tempo que o alerta de nível fica na tela
+
+            # --- CONDIÇÃO DE VITÓRIA (Requisito do Trabalho) ---
+            if current_level >= 4:
+                game_state = "VICTORY"
+                player.stop_sounds()
 
             difficulty_modifier = current_level
 
@@ -141,9 +146,9 @@ def main():
 
             for obs in obstacles[:]:
                 obs.move()
-                obs.rect.y += difficulty_modifier # Deixa os meteoros mais rápidos conforme o nível sobe
+                obs.rect.y += difficulty_modifier  # Deixa os meteoros mais rápidos conforme o nível sobe
 
-                # Colisão player e meteoro
+                # Colisao player e meteoro
                 if player.rect.colliderect(obs.rect):
                     player.take_damage()
 
@@ -152,13 +157,13 @@ def main():
                         snd_impact.play()
 
                     obs.respawn()
-                    shake_timer = 15 # efeito de tremor na tela
+                    shake_timer = 15  # Ativa o screen shake
 
                     if player.health <= 0:
                         game_state = "GAME_OVER"
                         player.stop_sounds()
 
-                # -Colisão bala e meteoro
+                # colisão bala e meteoro
                 for b in bullets[:]:
                     if obs.is_destructible and b.rect.colliderect(obs.rect):
                         explosions.append(Explosion(obs.rect.centerx, obs.rect.centery))
@@ -171,14 +176,13 @@ def main():
                             snd_explosion.stop()
                             snd_explosion.play()
 
-                        # Sistema para ganhar vida por meteoro destruído (limite de 4 vidas)
+                        # Sistema para o player ganhar 1 vida a cada meteoro destruido (máximo 4 vidas)
                         if player.health < 4:
                             player.health += 1
                             if snd_heal:
                                 snd_heal.stop()
                                 snd_heal.play()
 
-           #Desenho dos gráficos
             render_surface.fill(COLOR_BLACK)
             bg.draw(render_surface)
             player.draw(render_surface)
@@ -194,18 +198,18 @@ def main():
             score_text = font_score.render(f"SCORE:{score:07d}", True, COLOR_WHITE)
             render_surface.blit(score_text, (20, WIN_HEIGHT - 40))
 
-            # Corações de vida
+            # Renderiza os corações de vida
             for i in range(player.health):
                 render_surface.blit(heart_img, (WIN_WIDTH - 40 - (i * 35), WIN_HEIGHT - 40))
 
-            # Exibe o alerta piscante de "VELOCIDADE ++" quando subir de nível
+            # Exibe o alerta piscante de "VELOCIDADE ++" quando passar de nível
             if level_up_timer > 0:
                 if level_up_timer % 10 < 5:
                     lvl_text = font_level_up.render("VELOCIDADE ++", True, (255, 255, 0))
                     render_surface.blit(lvl_text, lvl_text.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 4)))
                 level_up_timer -= 1
 
-            # screen shake
+            # Lógica do Screen Shake
             render_x, render_y = 0, 0
             if shake_timer > 0:
                 render_x = random.randint(-4, 4)
@@ -221,6 +225,17 @@ def main():
             text1 = font_game_over.render("GAME OVER!", True, (255, 50, 50))
             text2 = font_score.render("Pressione [R] para reiniciar", True, COLOR_WHITE)
             text3 = font_score.render(f"SCORE FINAL: {score:07d}", True, (255, 255, 0))
+
+            window.blit(text1, text1.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 50)))
+            window.blit(text2, text2.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2)))
+            window.blit(text3, text3.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 + 50)))
+
+        # Tela de vitoria
+        elif game_state == "VICTORY":
+            window.fill(COLOR_BLACK)
+            text1 = font_game_over.render("VOCE VENCEU!", True, (50, 255, 50))
+            text2 = font_score.render("Pressione [R] para jogar de novo", True, COLOR_WHITE)
+            text3 = font_score.render("Setor limpo! Bom trabalho.", True, (255, 255, 0))
 
             window.blit(text1, text1.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 50)))
             window.blit(text2, text2.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2)))
